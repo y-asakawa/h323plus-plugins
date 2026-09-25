@@ -1,0 +1,54 @@
+H.264 Static Link 改修メモ (2026-02-27)
+2026-09-25 更新: 以下の手順は現行の h323plus-plugins 単独配置に合わせたもの。
+
+1. 目的
+- h264_video_pwplugin.dylib の外部依存を減らし、Homebrew の動的ライブラリ
+  (libavcodec/libavutil/libx264 など) に依存しない構成にする。
+- 過去に発生していた /tmp/x264-install 参照問題を回避する。
+
+2. 変更した内容
+- H.264/Makefile.in
+  - `STATIC_EXTERNAL_LIBS` と `FFMPEG_STATIC_ROOT` を追加。
+  - `third_party/static_ffmpeg/install/lib/libavcodec.a` と
+    `libavutil.a` が存在する場合、これらと `libx264.a` を静的リンク。
+  - 最小静的 ffmpeg が存在しない場合は pkg-config ベースの動的リンクにフォールバック。
+  - リンク時の実体を `EXT_LINK_LIBS` に統一。
+
+- common/dyna.cxx
+  - 静的リンク時の H.264 デコーダ取得に公開 API の
+    `avcodec_find_decoder` を使用。
+  - 同条件時は `AvcodecFindEncoder()` を `NULL` 返却にして不要な参照を抑止。
+  - ffmpeg API 差分対応 (libavcodec major 58 以降の send/receive 系、
+    av_frame_alloc/avcodec_free_context など) を追加。
+
+- scripts/build_static_ffmpeg_min.sh
+  - 最小静的 ffmpeg を生成するスクリプトを追加。
+  - 構成は H.264 用途に絞り、以下を有効化:
+    - libavcodec, libavutil
+    - decoder: h264, hevc
+    - parser: h264
+  - avformat/swscale/swresample/avfilter などは無効化。
+
+3. ビルド手順
+- 1) 最小静的 ffmpeg を作成
+  - `export H323PLUS_ROOT=/path/to/h323plus`
+  - `cd /path/to/h323plus-plugins`
+  - `./H.264/scripts/build_static_ffmpeg_min.sh`
+
+- 2) H.264 プラグインを再ビルド
+  - `cd H.264`
+  - `export OPENH323DIR="$H323PLUS_ROOT"`
+  - `make clean && make -j4`
+
+4. 確認ポイント
+- 依存確認:
+  - `otool -L h264_video_pwplugin.dylib`
+  - `libavcodec`, `libavutil`, `libx264` が表示されないこと。
+
+- 実行確認:
+  - h323askw 起動ログで H.264 プラグインが
+    `loaded successfully` になること。
+
+5. 補足
+- `Makefile` は configure 後に再生成されるため、恒久化対象は `Makefile.in`。
+- 静的リンク時でも macOS 標準の `libSystem` やフレームワーク依存は残る。

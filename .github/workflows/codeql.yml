@@ -1,0 +1,142 @@
+name: CodeQL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.txt"
+      - "docs/**"
+      - "LICENSE"
+      - "NOTICE"
+      - "*.png"
+      - ".github/dependabot.yml"
+  pull_request:
+    branches: ["main"]
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.txt"
+      - "docs/**"
+      - "LICENSE"
+      - "NOTICE"
+      - "*.png"
+      - ".github/dependabot.yml"
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze C/C++
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout h323plus-plugins
+        uses: actions/checkout@v7
+        with:
+          path: h323plus-plugins
+
+      - name: Checkout PTLib
+        uses: actions/checkout@v7
+        with:
+          repository: willamowius/ptlib
+          path: ptlib
+
+      - name: Checkout H323Plus
+        uses: actions/checkout@v7
+        with:
+          repository: willamowius/h323plus
+          path: h323plus
+
+      - name: Install build dependencies
+        run: |
+          uname -m
+          test "$(uname -m)" = "arm64"
+          brew update
+          brew install automake bison flex openssl@3 pkg-config ffmpeg x264
+
+      - name: Build PTLib
+        working-directory: ptlib
+        env:
+          CFLAGS: -arch arm64
+          CXXFLAGS: -arch arm64
+          LDFLAGS: -arch arm64
+          MACOSX_DEPLOYMENT_TARGET: "15.0"
+        run: |
+          ./configure --build=arm64-apple-darwin --enable-ipv6 --disable-odbc --disable-sdl --disable-lua --disable-expat
+          make debugnoshared
+
+      - name: Overlay plugin sources into H323Plus
+        run: |
+          set -eu
+
+          rm -rf \
+            h323plus/plugins/video/common \
+            h323plus/plugins/video/H.263-ffmpeg \
+            h323plus/plugins/video/H.264
+
+          mkdir -p h323plus/plugins/video h323plus/plugins/audio
+
+          cp -R h323plus-plugins/common h323plus/plugins/video/common
+          cp -R h323plus-plugins/H.263-ffmpeg h323plus/plugins/video/H.263-ffmpeg
+          cp -R h323plus-plugins/H.264 h323plus/plugins/video/H.264
+
+      - name: Configure H323Plus
+        working-directory: h323plus
+        env:
+          PWLIBDIR: ${{ github.workspace }}/ptlib
+          PKG_CONFIG_PATH: /opt/homebrew/opt/openssl@3/lib/pkgconfig
+          CFLAGS: -arch arm64
+          CXXFLAGS: -arch arm64
+          LDFLAGS: -arch arm64
+          MACOSX_DEPLOYMENT_TARGET: "15.0"
+        run: |
+          ./configure --build=arm64-apple-darwin --enable-h235 --enable-h235-256 --enable-h46017 --enable-h46026 --enable-h46019m --enable-h249 --enable-h46025 --enable-h460p --enable-h460pre --enable-h460com --enable-h460im --enable-h461 --enable-t120 --enable-t140 --enable-aec
+
+      - name: Build H323Plus
+        working-directory: h323plus
+        env:
+          PWLIBDIR: ${{ github.workspace }}/ptlib
+          CFLAGS: -arch arm64
+          CXXFLAGS: -arch arm64
+          LDFLAGS: -arch arm64
+          MACOSX_DEPLOYMENT_TARGET: "15.0"
+        run: make debugnoshared
+
+      - name: Copy generated plugin Makefiles
+        run: |
+          set -eu
+
+          cp h323plus/plugins/video/H.263-ffmpeg/Makefile h323plus-plugins/H.263-ffmpeg/Makefile
+          cp h323plus/plugins/video/H.264/Makefile h323plus-plugins/H.264/Makefile
+          cp h323plus/plugins/video/H.264/gpl/Makefile h323plus-plugins/H.264/gpl/Makefile
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: c-cpp
+          source-root: h323plus-plugins
+
+      - name: Build plugin sources
+        working-directory: h323plus-plugins
+        env:
+          PWLIBDIR: ${{ github.workspace }}/ptlib
+          OPENH323DIR: ${{ github.workspace }}/h323plus
+          PKG_CONFIG_PATH: /opt/homebrew/opt/openssl@3/lib/pkgconfig:/opt/homebrew/opt/ffmpeg/lib/pkgconfig:/opt/homebrew/opt/x264/lib/pkgconfig
+          OPTCCFLAGS: -arch arm64 -I${{ github.workspace }}/h323plus/include -I${{ github.workspace }}/h323plus/plugins
+          CFLAGS: -arch arm64
+          CXXFLAGS: -arch arm64
+          LDFLAGS: -arch arm64
+          MACOSX_DEPLOYMENT_TARGET: "15.0"
+          STATIC_EXTERNAL_LIBS: "no"
+        run: |
+          make -C H.263-ffmpeg
+          make -C H.264
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          checkout_path: h323plus-plugins

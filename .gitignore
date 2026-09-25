@@ -1,0 +1,60 @@
+# Local secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.csr
+id_rsa
+id_rsa.*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Dependency and language build output
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+
+# Logs and local databases
+*.log
+*.sqlite3
+
+# Build artifacts
+*.o
+*.a
+*.dylib
+*.so
+*.dll
+
+# macOS build/debug output
+*.dSYM/
+
+# Editor/IDE
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+*.user
+*.suo
+*.ncb
+*.opensdf
+*.sdf
+*.vcxproj.user
+
+# Dependency directories
+dep/
+
+# Build output
+obj/
+H.264/gpl/h264_video_pwplugin_helper
+
+# Codec sources excluded pending redistribution rights review
+/G.722.1/
+/G.722.2/
+/G722/
+/H.261-vic/

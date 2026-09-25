@@ -1,0 +1,73 @@
+h323plus-plugins multi-license notice
+=====================================
+
+This repository is a multi-license source distribution. There is no single
+license that applies to every file in this repository.
+
+The license notices in each source file are authoritative for that file. When a
+file carries its own copyright or license header, keep that header intact and
+follow that license.
+
+Complete texts for standard licenses referenced by files in this repository are
+provided under the LICENSES/ directory. See LICENSES/README.md for provenance:
+
+- LICENSES/MPL-1.0.txt
+- LICENSES/MPL-1.1.txt
+- LICENSES/GPL-2.0-or-later.txt
+- LICENSES/LGPL-2.1-or-later.txt
+
+Some files contain project-specific or copyright-holder-specific notices that
+are not replaced by a standard license text. Those notices remain in the
+source-file headers and must be preserved.
+
+Component guidance
+------------------
+
+Files that identify the Mozilla Public License Version 1.0 in their source
+headers remain distributed under MPL-1.0.
+
+Files without a clear license notice must not be assumed to be covered by
+MPL-1.0 or any other repository-wide default license. Their origin and
+applicable terms must be determined before redistribution.
+
+Third-party and codec-specific code
+-----------------------------------
+
+This repository also includes third-party codec and helper code under other
+terms, including but not limited to:
+
+- `H.264/gpl/`: GPL-2.0-or-later helper code.
+- `H.264/shared/`, static-link files, and some `common/` files: MPL/GPL
+  dual-license notices as specified in each source header.
+- `H.263-ffmpeg/`: MPL-1.0 plugin code with FFmpeg/libavcodec/libavformat dependency terms
+  applying to linked FFmpeg components.
+- `common/vs-stdint.h`: its own BSD-style notice.
+
+See THIRD-PARTY-NOTICES.md for the component index and attribution details.
+
+Patent and codec terms
+----------------------
+
+Some audio/video codec standards may have patent, trademark, export, or
+field-of-use obligations outside the source-code copyright license. Review the
+codec-specific notices and applicable laws before distributing or deploying
+the plugins.
+
+Binary distribution
+-------------------
+
+If you distribute built plugin binaries, you are responsible for complying with:
+
+- all source-code license obligations for the files compiled into the binary;
+- the licenses of dynamically or statically linked libraries such as FFmpeg,
+  libavcodec, libavutil, x264, PTLib, and H.323 Plus;
+- any required source availability, notices, and attribution obligations.
+
+For every binary release, complete and retain the record described in
+docs/DEPENDENCY-LICENSE-REVIEW.md.
+
+No warranty
+-----------
+
+The software is provided as-is, without warranty of any kind, to the extent
+permitted by the applicable licenses.

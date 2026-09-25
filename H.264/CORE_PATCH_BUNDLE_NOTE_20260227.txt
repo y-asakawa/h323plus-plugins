@@ -1,0 +1,38 @@
+H.264改良パッケージ 同梱メモ（core側変更を含む）
+作成日: 2026-02-27
+
+目的
+- H.264改良にあわせて、h323plusコア側の関連変更を同梱する。
+- H.264プラグイン側だけでなく、コア連携差分もまとめて受け渡せるようにする。
+
+配置先
+- h323plus-plugins/H.264
+
+同梱内容
+1) H.264プラグイン側（既存）
+- Makefile.in
+- h264-x264.cxx
+- h264-x264.h
+- h264pipe_static.cxx
+- h264pipe_static.h
+- gpl/enc-ctx.cxx
+- common/dyna.cxx
+- common/dyna.h
+- common/ffmpeg.h
+- scripts/build_static_ffmpeg_min.sh
+- H264_STATIC_LINK_REWORK_20260227.txt
+
+2) コア側（今回追加）
+- core_patch/openh323u.mak
+- core_patch/openh323u.mak.in
+- core_patch/src/channels.cxx
+- core_patch/src/h323pluginmgr.cxx
+- core_patch/src/q931.cxx
+- core_patch/src/h460/h460_std18.cxx
+
+元ファイルのコピー元
+- 対応する h323plus ソースツリー
+
+補足
+- core側ファイルは `core_patch` に分離して格納。
+- 適用時は、`core_patch` 内の相対パスを h323plus ルートに対応させて上書きする。
