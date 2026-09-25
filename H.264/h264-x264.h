@@ -58,7 +58,11 @@
 #if defined(H323_STATIC_H264)
 #include "h264pipe_static.h" 
 #else
+#ifdef WIN32
+#include "h264pipe_win32.h"
+#else
 #include "h264pipe_unix.h"
+#endif
 #endif
 
 #include <list>
@@ -488,8 +492,8 @@ static unsigned int   H264720P_Level           = H264_LEVEL3_1;
 static unsigned int   H264720P_MaxBitRate      = H264_LEVEL4_MBPS*100; //H264_LEVEL3_1_MBPS*100;
 static const char	  H264720P_TargetBitRate[] =  { "2048000" }; 
 static unsigned int   H264720P_VideoType       = PluginCodec_MediaTypeVideo;
-static unsigned int   H264720P_Generic3        = 231;
-static unsigned int   H264720P_Generic4        = 15;
+static unsigned int   H264720P_Generic3        = 0;
+static unsigned int   H264720P_Generic4        = 0;
 static unsigned int   H264720P_Generic5        = 0;
 static unsigned int   H264720P_Generic6        = 0;
 static unsigned int   H264720P_Generic7        = 0;
@@ -526,8 +530,8 @@ static unsigned int   H2641080P_Level           = H264_LEVEL4; //H264_LEVEL4;
 static unsigned int   H2641080P_MaxBitRate      = H264_LEVEL4_MBPS*100;
 static const char	  H2641080P_TargetBitRate[] =  { "10240000" }; 
 static unsigned int   H2641080P_VideoType       = PluginCodec_MediaTypeVideo;
-static unsigned int   H2641080P_Generic3        = 492;
-static unsigned int   H2641080P_Generic4        = 32;
+static unsigned int   H2641080P_Generic3        = 0;
+static unsigned int   H2641080P_Generic4        = 0;
 static unsigned int   H2641080P_Generic5        = 0;
 static unsigned int   H2641080P_Generic6        = 0;
 static unsigned int   H2641080P_Generic7        = 0;
@@ -635,7 +639,7 @@ static struct PluginCodec_Definition h264CodecDefn[] = {
    DECLARE_H323PARAM(H264CIF),
  // DECLARE_H323PARAM(H264VGA),
  // DECLARE_H323PARAM(H264CIF4)
- // DECLARE_H323PARAM(H264720P),
+   DECLARE_H323PARAM(H264720P),
    DECLARE_H323PARAM(H264H239)
   ,DECLARE_H323PARAM(H2641080P)
 };
